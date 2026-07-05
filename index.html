@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#10b981">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RiderCuan">
+<link rel="manifest" href="/manifest.json">
+<title>RiderCuan — Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; }
+
+  body {
+    background: #0d0f17;
+    min-height: 100vh;
+    color: #fff;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+  /* ── Cards ── */
+  .glass-card {
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 18px;
+  }
+  .glass-card-bright {
+    background: rgba(255,255,255,0.055);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 18px;
+  }
+
+  /* ── Gradient text ── */
+  .grad-text {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .grad-text-green {
+    background: linear-gradient(135deg, #10b981, #059669);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Input ── */
+  .rc-input {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 11px 14px;
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+    font-weight: 500;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .rc-input:focus { border-color: #f59e0b; background: rgba(255,255,255,0.07); }
+  .rc-input::placeholder { color: #444; }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    width: 100%; padding: 13px;
+    border-radius: 12px; border: none; outline: none;
+    font-family: inherit; font-size: 15px; font-weight: 700;
+    cursor: pointer; color: #000;
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    transition: opacity 0.18s, transform 0.1s;
+    letter-spacing: 0.3px;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* ── Quick action buttons ── */
+  .quick-btn {
+    border-radius: 16px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 5px; cursor: pointer;
+    transition: transform 0.12s, opacity 0.12s;
+    padding: 18px 8px;
+    border: none; outline: none;
+    width: 100%;
+  }
+  .quick-btn:hover { opacity: 0.85; }
+  .quick-btn:active { transform: scale(0.94); }
+  .quick-btn .q-icon { font-size: 26px; }
+  .quick-btn .q-label { font-size: 11px; font-weight: 800; letter-spacing: 0.8px; }
+  .quick-btn .q-sub   { font-size: 10px; color: #666; }
+
+  /* ── Sidebar Nav ── */
+  .sidebar-nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: 12px;
+    cursor: pointer; transition: background 0.15s, color 0.15s;
+    color: #666; font-size: 14px; font-weight: 600;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+  .sidebar-nav-item:hover { background: rgba(255,255,255,0.05); color: #aaa; }
+  .sidebar-nav-item.active { background: rgba(245,158,11,0.12); color: #f59e0b; }
+  .sidebar-nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  /* ── Tabs ── */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── Stat bar ── */
+  .stat-bar { height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; margin-top: 8px; }
+  .stat-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+
+  /* ── Auth screens ── */
+  .auth-screen {
+    position: fixed; inset: 0;
+    background: #0d0f17;
+    z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .auth-screen.hidden { display: none; }
+  .auth-card {
+    width: 100%; max-width: 420px;
+    background: #141620;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 36px 32px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+  }
+  .auth-gradient-bar {
+    height: 3px;
+    background: linear-gradient(90deg, #f59e0b, #f97316, #10b981, #f59e0b);
+    background-size: 300% 100%;
+    animation: shimmer 3s linear infinite;
+    border-radius: 3px 3px 0 0;
+  }
+  @keyframes shimmer { 0%{background-position:300% 0} 100%{background-position:-300% 0} }
+
+  .auth-link {
+    color: #f59e0b; font-size: 13px; font-weight: 600;
+    cursor: pointer; background: none; border: none;
+    transition: opacity 0.2s; padding: 0; text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .auth-link:hover { opacity: 0.75; }
+
+  .auth-error {
+    color: #f87171; font-size: 13px; font-weight: 500;
+    background: rgba(248,113,113,0.07);
+    border: 1px solid rgba(248,113,113,0.18);
+    border-radius: 9px; padding: 10px 12px;
+    display: none; margin-bottom: 12px;
+  }
+  .auth-error.show { display: block; }
+
+  /* ── Modal ── */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    z-index: 200;
+    display: none; align-items: center; justify-content: center; padding: 24px;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal-box {
+    background: #141620;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 22px;
+    padding: 28px 24px;
+    width: 100%; max-width: 400px;
+    animation: modalIn 0.22s ease;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  }
+  @keyframes modalIn { from { transform: scale(0.93); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+    background: #1e2030; border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 40px; padding: 11px 22px;
+    font-size: 13px; color: #fff; font-weight: 600;
+    z-index: 999; white-space: nowrap;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none; display: none;
+  }
+
+  /* ── Tx list ── */
+  .tx-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .tx-item:last-child { border-bottom: none; }
+  .tx-icon {
+    width: 36px; height: 36px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0;
+  }
+
+  /* ── PRO badge ── */
+  .pro-badge {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    color: #000; font-size: 10px; font-weight: 800;
+    padding: 2px 8px; border-radius: 20px; letter-spacing: 0.5px;
+  }
+
+  /* ── Quick parkir btn ── */
+  .quick-parkir-btn {
+    background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 14px; padding: 14px 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; transition: all 0.15s; width: 100%;
+  }
+  .quick-parkir-btn:hover { background: rgba(245,158,11,0.12); }
+  .quick-parkir-btn:active { transform: scale(0.96); }
+
+  /* ── Pulse ── */
+  .pulse { animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* ── Sidebar layout ── */
+  #app-shell {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    grid-template-rows: auto 1fr;
+    min-height: 100vh;
+  }
+  #topbar {
+    grid-column: 1 / -1;
+    background: #0d0f17;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 0 24px;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+  }
+  #sidebar {
+    background: #0f1118;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    padding: 20px 14px;
+    display: flex; flex-direction: column; gap: 4px;
+    min-height: calc(100vh - 60px);
+    position: sticky; top: 60px; align-self: start; height: calc(100vh - 60px); overflow-y: auto;
+  }
+  #main-content {
+    padding: 28px;
+    overflow-y: auto;
+    max-height: calc(100vh - 60px);
+  }
+
+  /* ── Dashboard 2-column grid ── */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  @media (max-width: 960px) {
+    #app-shell { grid-template-columns: 1fr; }
+    #sidebar { display: none; }
+    #main-content { max-height: none; padding: 16px; padding-bottom: 80px; }
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .quick-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+
+  /* ── Bottom Nav (Mobile Only) ── */
+  #bottom-nav {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #0f1118;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    z-index: 60;
+    padding: 8px 0 env(safe-area-inset-bottom, 8px);
+  }
+  #bottom-nav .bnav-inner {
+    display: flex; justify-content: space-around; align-items: center;
+  }
+  .bnav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 6px 16px; border-radius: 12px; cursor: pointer;
+    border: none; background: none; flex: 1;
+    transition: background 0.15s;
+  }
+  .bnav-item .bnav-icon { font-size: 20px; }
+  .bnav-item .bnav-label { font-size: 10px; font-weight: 600; color: #555; }
+  .bnav-item.active .bnav-label { color: #f59e0b; }
+
+  @media (max-width: 960px) {
+    #bottom-nav { display: block; }
+  }
+
+  /* ── Bengkel card ── */
+  .bengkel-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 14px;
+    transition: background 0.15s;
+  }
+  .bengkel-card:hover { background: rgba(255,255,255,0.07); }
+  .bengkel-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+
+  /* ── Quick parkir btn ── */
+  .quick-parkir-btn {
+    background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 14px; padding: 14px 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; transition: all 0.15s; width: 100%;
+  }
+  .quick-parkir-btn:hover { background: rgba(245,158,11,0.12); }
+  .quick-parkir-btn:active { transform: scale(0.96); }
+
+  /* ── Pulse ── */
+  .pulse { animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- TOAST -->
+<!-- ═══════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- LAYAR LOGIN -->
+<!-- ═══════════════════════════════════════ -->
+<div class="auth-screen" id="screenLogin">
+  <div class="auth-card">
+    <div class="auth-gradient-bar mb-8" style="margin: -36px -32px 28px; border-radius: 24px 24px 0 0;"></div>
+
+    <!-- Logo -->
+    <div class="flex flex-col items-center mb-8">
+      <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-4"
+           style="background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(249,115,22,0.1)); border: 1px solid rgba(245,158,11,0.2)">
+        🏍️
+      </div>
+      <h1 class="text-2xl font-800 grad-text tracking-tight">RiderCuan</h1>
+      <p class="text-gray-500 text-sm mt-1">Hitung laba bersih riil harianmu</p>
+    </div>
+
+    <p class="text-xs text-gray-600 font-semibold uppercase tracking-widest mb-5">Masuk ke Akun</p>
+
+    <div class="mb-3">
+      <label class="text-xs text-gray-400 font-semibold block mb-1.5">Nama Panggilan</label>
+      <input id="login-name" type="text" class="rc-input"
+             onkeydown="if(event.key==='Enter') document.getElementById('login-password').focus()">
+    </div>
+
+    <div class="mb-5">
+      <label class="text-xs text-gray-400 font-semibold block mb-1.5">Password</label>
+      <input id="login-password" type="password" class="rc-input"
+             onkeydown="if(event.key==='Enter') handleLogin()">
+    </div>
+
+    <div class="auth-error" id="login-error"></div>
+
+    <button class="btn-primary mb-4" id="btn-login" onclick="handleLogin()">Masuk →</button>
+
+    <p class="text-center text-gray-500 text-sm">
+      Belum punya akun?
+      <button class="auth-link ml-1" onclick="showScreen('screenDaftar')">Daftar di sini</button>
+    </p>
+
+    <div class="mt-6 rounded-xl p-3 text-center" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06)">
+      <p class="text-xs text-gray-600">💡 Demo: <span class="text-amber-400 font-semibold">Budi Santoso</span> / <span class="text-amber-400 font-semibold">demo123</span></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- LAYAR DAFTAR -->
+<!-- ═══════════════════════════════════════ -->
+<div class="auth-screen hidden" id="screenDaftar">
+  <div class="auth-card" style="max-width:460px;">
+    <div class="auth-gradient-bar mb-8" style="margin: -36px -32px 28px; border-radius: 24px 24px 0 0;"></div>
+
+    <div class="flex flex-col items-center mb-7">
+      <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-4"
+           style="background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.1)); border: 1px solid rgba(16,185,129,0.2)">
+        🏍️
+      </div>
+      <h1 class="text-2xl font-800 grad-text-green tracking-tight">Buat Akun Baru</h1>
+      <p class="text-gray-500 text-sm mt-1">Gratis selamanya</p>
+    </div>
+
+    <p class="text-xs text-gray-600 font-semibold uppercase tracking-widest mb-5">Data Akun</p>
+
+    <div class="grid grid-cols-2 gap-3 mb-3">
+      <div class="col-span-2">
+        <label class="text-xs text-gray-400 font-semibold block mb-1.5">Nama Panggilan</label>
+        <input id="daftar-name" type="text" class="rc-input">
+      </div>
+      <div>
+        <label class="text-xs text-gray-400 font-semibold block mb-1.5">Password</label>
+        <input id="daftar-password" type="password" class="rc-input">
+      </div>
+      <div>
+        <label class="text-xs text-gray-400 font-semibold block mb-1.5">Konfirmasi Password</label>
+        <input id="daftar-password-confirm" type="password" class="rc-input">
+      </div>
+      <div class="col-span-2">
+        <label class="text-xs text-gray-400 font-semibold block mb-1.5">Merek Motor</label>
+        <input id="daftar-motor" type="text" class="rc-input">
+      </div>
+      <div>
+        <label class="text-xs text-gray-400 font-semibold block mb-1.5">Tahun Motor</label>
+        <input id="daftar-tahun" type="number" class="rc-input">
+      </div>
+      <div>
+        <label class="text-xs text-gray-400 font-semibold block mb-1.5">Odometer (km)</label>
+        <input id="daftar-odo" type="number" class="rc-input">
+      </div>
+    </div>
+
+    <div class="auth-error mt-2" id="daftar-error"></div>
+
+    <button class="btn-primary mt-4 mb-4" id="btn-daftar" onclick="handleDaftar()">Daftar Sekarang →</button>
+
+    <p class="text-center text-gray-500 text-sm">
+      Sudah punya akun?
+      <button class="auth-link ml-1" onclick="showScreen('screenLogin')">Masuk</button>
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- MODAL: PARKIR CEPAT -->
+<!-- ═══════════════════════════════════════ -->
+<div class="modal-backdrop" id="modalParkir">
+  <div class="modal-box">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <p class="text-xs text-gray-500 font-semibold uppercase tracking-widest">Parkir Cepat</p>
+        <p class="text-white text-lg font-bold mt-0.5">Pilih Nominal</p>
+      </div>
+      <button onclick="closeModal('modalParkir')" class="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-colors" style="background:rgba(255,255,255,0.07)">✕</button>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <button onclick="quickParkir(1000)" class="quick-parkir-btn">
+        <span class="text-xl font-800 grad-text">Rp1.000</span>
+        <span class="text-xs text-gray-500">Pinggir jalan</span>
+      </button>
+      <button onclick="quickParkir(2000)" class="quick-parkir-btn">
+        <span class="text-xl font-800 grad-text">Rp2.000</span>
+        <span class="text-xs text-gray-500">Mini market</span>
+      </button>
+      <button onclick="quickParkir(3000)" class="quick-parkir-btn">
+        <span class="text-xl font-800 grad-text">Rp3.000</span>
+        <span class="text-xs text-gray-500">Mall / resto</span>
+      </button>
+      <button onclick="quickParkir(5000)" class="quick-parkir-btn">
+        <span class="text-xl font-800 grad-text">Rp5.000</span>
+        <span class="text-xs text-gray-500">Gedung</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- MODAL: IKLAN SERVIS -->
+<!-- ═══════════════════════════════════════ -->
+<div class="modal-backdrop" id="modalAd">
+  <div class="modal-box">
+    <div class="flex justify-between items-start mb-4">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style="background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.2)">🔧</div>
+      <button onclick="closeModal('modalAd')" class="text-gray-500 text-sm hover:text-gray-300 transition-colors">Tutup</button>
+    </div>
+    <p class="text-xs text-emerald-400 font-bold uppercase tracking-widest mb-1">Saldo Servis Cukup!</p>
+    <p class="text-white text-xl font-bold mb-2">Waktunya Ganti Oli 🛵</p>
+    <p class="text-gray-400 text-sm mb-5">Nikmati <span class="text-amber-400 font-bold">diskon 10%</span> ganti oli di Bengkel Mitra RiderCuan terdekat. Tunjukkan aplikasi ini ke mekanik!</p>
+    <div class="glass-card p-4 mb-4" style="border-color:rgba(16,185,129,0.2)">
+      <p class="text-xs text-gray-500 mb-1">Bengkel Terdekat</p>
+      <p class="text-white font-bold">📍 Bengkel Mas Agus — 0.8 km</p>
+      <p class="text-gray-400 text-sm">Jl. Raya Bogor No.47 · Buka 07:00–17:00</p>
+    </div>
+    <button onclick="closeModal('modalAd')" class="btn-primary" style="background:linear-gradient(135deg,#10b981,#059669)">Klaim Diskon Sekarang →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- MODAL: PAKAI SALDO SERVIS             -->
+<!-- ═══════════════════════════════════════ -->
+<div class="modal-backdrop" id="modalPakaiServis">
+  <div class="modal-box">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <p class="text-xs text-amber-400 font-bold uppercase tracking-widest">Celengan Servis</p>
+        <p class="text-white text-lg font-bold mt-0.5">Pakai Saldo untuk Servis</p>
+      </div>
+      <button onclick="closeModal('modalPakaiServis')"
+              class="w-9 h-9 rounded-full flex items-center justify-center text-gray-400"
+              style="background:rgba(255,255,255,0.07)">✕</button>
+    </div>
+
+    <div class="glass-card p-3 mb-4" style="border-color:rgba(245,158,11,0.2)">
+      <p class="text-xs text-gray-500">Saldo Celengan Tersedia</p>
+      <p class="text-2xl font-bold text-amber-400 mt-1" id="modal-saldo-display">Rp0</p>
+    </div>
+
+    <label class="text-xs text-gray-400 font-semibold block mb-2">Biaya Servis yang Dibayar</label>
+    <input id="pakai-servis-amount" type="number" class="rc-input mb-4"
+           placeholder="Contoh: 65000">
+
+    <div class="auth-error mb-3" id="pakai-servis-error"></div>
+
+    <button onclick="submitPakaiServis()"
+            class="btn-primary"
+            style="background:linear-gradient(135deg,#f59e0b,#f97316)">
+      🔧 Bayar Servis dari Celengan
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- MODAL: BENGKEL TERDEKAT (BANDUNG)     -->
+<!-- ═══════════════════════════════════════ -->
+<div class="modal-backdrop" id="bengkelModal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <p class="text-xs text-emerald-400 font-bold uppercase tracking-widest">📍 Mitra RiderCuan</p>
+        <p class="text-white text-lg font-bold mt-0.5">Bengkel Terdekat — Bandung</p>
+      </div>
+      <button onclick="closeModal('bengkelModal')"
+              class="w-9 h-9 rounded-full flex items-center justify-center text-gray-400"
+              style="background:rgba(255,255,255,0.07)">✕</button>
+    </div>
+
+    <div class="space-y-3 mb-5">
+
+      <!-- Bengkel 1 -->
+      <div class="bengkel-card" style="border-color:rgba(245,158,11,0.2)">
+        <div class="bengkel-icon" style="background:rgba(245,158,11,0.12)">🏪</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap mb-0.5">
+            <p class="text-white text-sm font-bold">Yamaha DDS Soekarno Hatta</p>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full"
+                  style="background:rgba(245,158,11,0.15); color:#f59e0b; white-space:nowrap">
+              Diskon 10%
+            </span>
+          </div>
+          <p class="text-gray-500 text-xs">📍 Jl. Soekarno Hatta, Kota Bandung</p>
+          <p class="text-gray-600 text-xs mt-0.5">Buka Senin–Sabtu · 08:00–17:00</p>
+        </div>
+      </div>
+
+      <!-- Bengkel 2 -->
+      <div class="bengkel-card">
+        <div class="bengkel-icon" style="background:rgba(96,165,250,0.12)">🔧</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-white text-sm font-bold mb-0.5">Bengkel AA Motor Buah Batu</p>
+          <p class="text-gray-500 text-xs">📍 Jl. Buah Batu, Kota Bandung</p>
+          <p class="text-gray-600 text-xs mt-0.5">Buka Setiap Hari · 07:30–18:00</p>
+        </div>
+      </div>
+
+      <!-- Bengkel 3 -->
+      <div class="bengkel-card">
+        <div class="bengkel-icon" style="background:rgba(139,92,246,0.12)">⚙️</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-white text-sm font-bold mb-0.5">Servis Matic & CVT Soreang</p>
+          <p class="text-gray-500 text-xs">📍 Jl. Raya Soreang, Kab. Bandung</p>
+          <p class="text-gray-600 text-xs mt-0.5">Spesialis Matic · Buka 08:00–17:00</p>
+        </div>
+      </div>
+
+      <!-- Bengkel 4 -->
+      <div class="bengkel-card" style="border-color:rgba(16,185,129,0.2)">
+        <div class="bengkel-icon" style="background:rgba(16,185,129,0.12)">🏍️</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap mb-0.5">
+            <p class="text-white text-sm font-bold">Bengkel Mitra RiderCuan Cibiru</p>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full"
+                  style="background:rgba(16,185,129,0.15); color:#10b981; white-space:nowrap">
+              Mitra Resmi
+            </span>
+          </div>
+          <p class="text-gray-500 text-xs">📍 Jl. A.H. Nasution, Cibiru, Kota Bandung</p>
+          <p class="text-gray-600 text-xs mt-0.5">Buka Setiap Hari · 08:00–19:00</p>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="text-xs text-gray-600 text-center mb-4">
+      💡 Tunjukkan aplikasi RiderCuan ke mekanik untuk klaim diskon mitra
+    </p>
+
+    <button onclick="closeModal('bengkelModal')" class="btn-primary"
+            style="background:linear-gradient(135deg,#10b981,#059669)">
+      Tutup
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- APP SHELL (Dashboard) -->
+<!-- ═══════════════════════════════════════ -->
+<div id="app-shell" class="hidden">
+
+  <!-- ── TOP BAR ── -->
+  <header id="topbar">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-xl flex items-center justify-center text-lg" style="background:rgba(245,158,11,0.12)">🏍️</div>
+      <span class="text-white font-800 text-lg tracking-tight">Rider<span class="grad-text">Cuan</span></span>
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="text-gray-400 text-sm font-semibold" id="hdr-name">—</span>
+      <span class="pro-badge hidden" id="hdr-pro">PRO</span>
+      <button onclick="handleLogout()"
+              class="text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+              style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); color:#f87171;">
+        Keluar
+      </button>
+    </div>
+  </header>
+
+  <!-- ── SIDEBAR ── -->
+  <aside id="sidebar">
+    <p class="text-xs text-gray-600 font-semibold uppercase tracking-widest px-2 mb-3">Menu</p>
+    <button class="sidebar-nav-item active" onclick="switchTab('tab-home')" id="nav-home">
+      <span class="nav-icon">🏠</span> Beranda
+    </button>
+    <button class="sidebar-nav-item" onclick="switchTab('tab-report')" id="nav-report">
+      <span class="nav-icon">📊</span> Laporan
+    </button>
+    <button class="sidebar-nav-item" onclick="switchTab('tab-market')" id="nav-market">
+      <span class="nav-icon">🛒</span> Marketplace
+    </button>
+    <button class="sidebar-nav-item" onclick="switchTab('tab-pro')" id="nav-pro">
+      <span class="nav-icon">⭐</span> PRO & Referral
+    </button>
+
+    <div class="mt-auto pt-6">
+      <div class="glass-card p-3 text-center">
+        <p class="text-xs text-gray-600">Motor</p>
+        <p class="text-white text-sm font-bold" id="sidebar-motor">—</p>
+        <p class="text-xs text-gray-600 mt-1">Odo: <span class="text-gray-400" id="sidebar-odo">—</span> km</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── BOTTOM NAV (Mobile Only) ── -->
+  <nav id="bottom-nav">
+    <div class="bnav-inner">
+      <button class="bnav-item active" onclick="switchTab('tab-home')" id="bnav-home">
+        <span class="bnav-icon">🏠</span>
+        <span class="bnav-label">Beranda</span>
+      </button>
+      <button class="bnav-item" onclick="switchTab('tab-report')" id="bnav-report">
+        <span class="bnav-icon">📊</span>
+        <span class="bnav-label">Laporan</span>
+      </button>
+      <button class="bnav-item" onclick="switchTab('tab-market')" id="bnav-market">
+        <span class="bnav-icon">🛒</span>
+        <span class="bnav-label">Beli</span>
+      </button>
+      <button class="bnav-item" onclick="switchTab('tab-pro')" id="bnav-pro">
+        <span class="bnav-icon">⭐</span>
+        <span class="bnav-label">PRO</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main id="main-content">
+
+    <!-- ════════════════════════════════ TAB: BERANDA ════════════════════════════════ -->
+    <div class="tab-content active" id="tab-home">
+
+      <div class="dashboard-grid">
+
+        <!-- ── KOLOM KIRI (8 col) ── -->
+        <div>
+
+          <!-- Sapaan -->
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <p class="text-gray-500 text-sm font-semibold">Selamat kerja keras, 👋</p>
+              <h2 class="text-white text-2xl font-800 mt-0.5" id="hdr-name-main">—</h2>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-gray-600" id="tanggal-hari-ini">—</p>
+            </div>
+          </div>
+
+          <!-- Hero Card: Uang Bersih Dapur -->
+          <div class="glass-card p-6 mb-6" style="background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(249,115,22,0.04)); border-color:rgba(245,158,11,0.15)">
+            <p class="text-xs text-gray-500 font-semibold uppercase tracking-widest mb-2">💰 Uang Bersih Dapur Hari Ini</p>
+            <p class="text-5xl font-800 grad-text mb-4" id="uang-bersih">Rp0</p>
+            <div class="grid grid-cols-3 gap-4 pt-4" style="border-top:1px solid rgba(255,255,255,0.06)">
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Total Omset</p>
+                <p class="text-base text-emerald-400 font-bold" id="total-argo-mini">Rp0</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Pengeluaran</p>
+                <p class="text-base text-red-400 font-bold" id="total-ops-mini">Rp0</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Cadangan Besok</p>
+                <p class="text-base text-blue-400 font-bold" id="ops-besok">Rp0</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action 3 Detik -->
+          <p class="text-xs text-gray-500 font-semibold uppercase tracking-widest mb-3">⚡ Catat Cepat — 3 Detik</p>
+          <div class="grid grid-cols-4 gap-3 mb-5 quick-grid">
+            <button class="quick-btn" style="background:linear-gradient(135deg,#0d2d0d,#082008); border:1px solid rgba(16,185,129,0.2)" onclick="openArgoInput()">
+              <span class="q-icon">💸</span>
+              <span class="q-label text-emerald-400">+ ARGO</span>
+              <span class="q-sub">Catat pendapatan</span>
+            </button>
+            <button class="quick-btn" style="background:linear-gradient(135deg,#2d0d0d,#1a0808); border:1px solid rgba(239,68,68,0.2)" onclick="openBensinInput()">
+              <span class="q-icon">⛽</span>
+              <span class="q-label text-red-400">− BENSIN</span>
+              <span class="q-sub">Isi bahan bakar</span>
+            </button>
+            <button class="quick-btn" style="background:linear-gradient(135deg,#0d0d2d,#080818); border:1px solid rgba(139,92,246,0.2)" onclick="showModal('modalParkir')">
+              <span class="q-icon">🅿️</span>
+              <span class="q-label text-purple-400">− PARKIR</span>
+              <span class="q-sub">Pilih nominal</span>
+            </button>
+            <button class="quick-btn" style="background:linear-gradient(135deg,#2d1a00,#1a0f00); border:1px solid rgba(245,158,11,0.2)" onclick="openMakanInput()">
+              <span class="q-icon">🍚</span>
+              <span class="q-label text-amber-400">− MAKAN</span>
+              <span class="q-sub">Catat konsumsi</span>
+            </button>
+          </div>
+
+          <!-- Input Nominal (dynamic) -->
+          <div id="quick-input-box" class="glass-card p-4 mb-5 hidden">
+            <p class="text-xs text-gray-500 mb-2 font-semibold" id="quick-input-label">Nominal</p>
+            <div class="flex gap-2">
+              <input id="quick-amount" type="number" class="rc-input flex-1">
+              <button onclick="submitQuickInput()" class="px-5 rounded-xl font-bold text-sm text-black" style="background:linear-gradient(135deg,#f59e0b,#f97316)">Simpan</button>
+              <button onclick="cancelQuickInput()" class="px-3 rounded-xl text-gray-400 text-sm" style="background:rgba(255,255,255,0.05)">✕</button>
+            </div>
+          </div>
+
+          <!-- Laporan Ringkas -->
+          <p class="text-xs text-gray-500 font-semibold uppercase tracking-widest mb-3">📊 Ringkasan Hari Ini</p>
+          <div class="grid grid-cols-2 gap-3 mb-2">
+            <div class="glass-card p-4" style="border-color:rgba(16,185,129,0.15)">
+              <p class="text-xs text-emerald-400 font-semibold mb-1">Total Argo</p>
+              <p class="text-2xl font-bold text-white" id="rep-argo">Rp0</p>
+              <div class="stat-bar"><div class="stat-fill bg-emerald-400" id="rep-argo-bar" style="width:0%"></div></div>
+            </div>
+            <div class="glass-card p-4" style="border-color:rgba(239,68,68,0.15)">
+              <p class="text-xs text-red-400 font-semibold mb-1">Total Pengeluaran</p>
+              <p class="text-2xl font-bold text-white" id="rep-ops">Rp0</p>
+              <div class="stat-bar"><div class="stat-fill bg-red-400" id="rep-ops-bar" style="width:0%"></div></div>
+            </div>
+            <div class="glass-card p-4" style="border-color:rgba(245,158,11,0.15)">
+              <p class="text-xs text-amber-400 font-semibold mb-1">Saldo Celengan Servis</p>
+              <p class="text-2xl font-bold text-white" id="rep-celengan">Rp0</p>
+              <div class="stat-bar"><div class="stat-fill" id="rep-celengan-bar" style="width:60%;background:#f59e0b"></div></div>
+            </div>
+            <div class="glass-card p-4" style="border-color:rgba(96,165,250,0.15)">
+              <p class="text-xs text-blue-400 font-semibold mb-1">Cadangan Besok (20%)</p>
+              <p class="text-2xl font-bold text-white" id="rep-besok">Rp0</p>
+              <div class="stat-bar"><div class="stat-fill bg-blue-400" id="rep-besok-bar" style="width:0%"></div></div>
+            </div>
+          </div>
+
+          <!-- Rincian pengeluaran -->
+          <div class="glass-card p-4 mt-3">
+            <p class="text-xs text-gray-500 font-semibold uppercase tracking-widest mb-3">Rincian Pengeluaran</p>
+            <div class="flex justify-between py-2" style="border-bottom:1px solid rgba(255,255,255,0.04)">
+              <span class="text-gray-400 text-sm">⛽ Bensin</span>
+              <span class="text-white text-sm font-semibold" id="rep-bensin">Rp0</span>
+            </div>
+            <div class="flex justify-between py-2" style="border-bottom:1px solid rgba(255,255,255,0.04)">
+              <span class="text-gray-400 text-sm">🅿️ Parkir</span>
+              <span class="text-white text-sm font-semibold" id="rep-parkir">Rp0</span>
+            </div>
+            <div class="flex justify-between py-2">
+              <span class="text-gray-400 text-sm">🍚 Makan</span>
+              <span class="text-white text-sm font-semibold" id="rep-makan">Rp0</span>
+            </div>
+          </div>
+
+        </div><!-- /kolom kiri -->
+
+        <!-- ── KOLOM KANAN (sidebar kanan) ── -->
+        <div>
+
+          <!-- Celengan Servis -->
+          <div class="glass-card p-5 mb-4" style="border-color:rgba(245,158,11,0.18)">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <p class="text-xs text-amber-400 font-bold uppercase tracking-wide">🔧 Smart Celengan Servis</p>
+                <p class="text-xs text-gray-500 mt-1">Penyusutan otomatis Rp32,5/km</p>
+              </div>
+              <p class="text-amber-400 font-800 text-xl" id="celengan-total">Rp0</p>
+            </div>
+
+            <!-- Input odometer -->
+            <div class="flex gap-2 mb-3">
+              <input id="new-odometer" type="number" class="rc-input flex-1 text-sm">
+              <button onclick="hitungCelengan()"
+                      class="px-3 rounded-xl font-bold text-xs text-black whitespace-nowrap"
+                      style="background:linear-gradient(135deg,#f59e0b,#f97316)">
+                Hitung
+              </button>
+            </div>
+            <p class="text-xs text-gray-600 mb-4">Odo sekarang: <span class="text-gray-400" id="current-odo">—</span> km</p>
+
+            <!-- Action buttons -->
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="openPakaiServisModal()"
+                      class="flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all"
+                      style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.25); color:#f59e0b;">
+                🔧 Pakai untuk Servis
+              </button>
+              <button onclick="showModal('bengkelModal')"
+                      class="flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all"
+                      style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25); color:#10b981;">
+                📍 Cari Bengkel Terdekat
+              </button>
+            </div>
+          </div>
+
+          <!-- Riwayat Transaksi Hari Ini -->
+          <div class="glass-card p-5">
+            <div class="flex items-center justify-between mb-4">
+              <p class="text-sm text-white font-bold">📋 Riwayat Hari Ini</p>
+              <span class="text-xs text-gray-600 pulse">● Live</span>
+            </div>
+            <div id="tx-list">
+              <p class="text-gray-600 text-sm text-center py-5">Belum ada transaksi</p>
+            </div>
+          </div>
+
+        </div><!-- /kolom kanan -->
+
+      </div><!-- /dashboard-grid -->
+    </div><!-- /tab-home -->
+
+    <!-- ════════════════════════════════ TAB: LAPORAN ════════════════════════════════ -->
+    <div class="tab-content" id="tab-report">
+      <h2 class="text-white text-2xl font-800 mb-6">📊 Laporan Uang Dapur</h2>
+
+      <div class="glass-card p-6 mb-5" style="background:linear-gradient(135deg,rgba(245,158,11,0.07),rgba(249,115,22,0.04)); border-color:rgba(245,158,11,0.15)">
+        <p class="text-xs text-gray-500 mb-1 uppercase tracking-widest font-semibold">✨ Uang Bersih Dapur Hari Ini</p>
+        <p class="text-5xl font-800 grad-text" id="rep-bersih">Rp0</p>
+        <p class="text-xs text-gray-600 mt-2">= Omset − Operasional − Celengan − Cadangan Besok</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-5">
+        <div class="glass-card p-5" style="border-color:rgba(16,185,129,0.15)">
+          <p class="text-xs text-emerald-400 font-semibold uppercase tracking-wide mb-1">Total Argo</p>
+          <p class="text-3xl font-800 text-white" id="lap-argo">Rp0</p>
+          <div class="stat-bar mt-3"><div class="stat-fill bg-emerald-400" id="lap-argo-bar" style="width:0%"></div></div>
+        </div>
+        <div class="glass-card p-5" style="border-color:rgba(239,68,68,0.15)">
+          <p class="text-xs text-red-400 font-semibold uppercase tracking-wide mb-1">Total Pengeluaran</p>
+          <p class="text-3xl font-800 text-white" id="lap-ops">Rp0</p>
+          <div class="stat-bar mt-3"><div class="stat-fill bg-red-400" id="lap-ops-bar" style="width:0%"></div></div>
+        </div>
+        <div class="glass-card p-5" style="border-color:rgba(245,158,11,0.15)">
+          <p class="text-xs text-amber-400 font-semibold uppercase tracking-wide mb-1">Saldo Servis</p>
+          <p class="text-3xl font-800 text-white" id="lap-celengan">Rp0</p>
+          <div class="stat-bar mt-3"><div class="stat-fill" style="width:70%;background:#f59e0b"></div></div>
+        </div>
+        <div class="glass-card p-5" style="border-color:rgba(96,165,250,0.15)">
+          <p class="text-xs text-blue-400 font-semibold uppercase tracking-wide mb-1">Cadangan Besok</p>
+          <p class="text-3xl font-800 text-white" id="lap-besok">Rp0</p>
+          <div class="stat-bar mt-3"><div class="stat-fill bg-blue-400" id="lap-besok-bar" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <!-- Export CSV -->
+      <div class="glass-card p-5">
+        <div class="flex items-center gap-4">
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl" style="background:rgba(245,158,11,0.1)">📥</div>
+          <div class="flex-1">
+            <p class="text-white font-bold">Export Laporan CSV</p>
+            <p class="text-xs text-gray-500">Download rekap semua transaksi kamu</p>
+          </div>
+          <button id="btn-export" onclick="exportCSV()" class="px-4 py-2 rounded-xl text-sm font-bold text-black" style="background:linear-gradient(135deg,#f59e0b,#f97316)">
+            Download
+          </button>
+        </div>
+        <div id="export-lock" class="mt-3 flex items-center gap-2 hidden">
+          <span class="text-xs text-gray-500">🔒 Fitur PRO — Upgrade untuk unlock</span>
+          <button onclick="switchTab('tab-pro')" class="text-xs text-amber-400 font-bold underline">Upgrade →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════ TAB: MARKETPLACE ════════════════════════════════ -->
+    <div class="tab-content" id="tab-market">
+      <h2 class="text-white text-2xl font-800 mb-2">🛒 Marketplace Driver</h2>
+      <p class="text-gray-500 text-sm mb-6">Beli langsung — tercatat otomatis di pengeluaranmu</p>
+
+      <div class="grid grid-cols-1 gap-4" style="max-width:600px">
+        <div class="glass-card p-5" style="border-color:rgba(96,165,250,0.15)">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style="background:rgba(96,165,250,0.1)">📶</div>
+            <div class="flex-1">
+              <p class="text-white font-bold">Paket Data Khusus Driver</p>
+              <p class="text-xs text-gray-500">30GB • 30 Hari • Semua Operator</p>
+            </div>
+            <p class="text-blue-400 font-bold text-lg">Rp25.000</p>
+          </div>
+          <button onclick="buyAffiliate('Paket Data Driver', 25000)" class="w-full py-2.5 rounded-xl text-sm font-bold text-white" style="background:rgba(96,165,250,0.12); border:1px solid rgba(96,165,250,0.2)">Beli Sekarang →</button>
+        </div>
+
+        <div class="glass-card p-5" style="border-color:rgba(245,158,11,0.15)">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style="background:rgba(245,158,11,0.1)">⛽</div>
+            <div class="flex-1">
+              <p class="text-white font-bold">Voucher Bensin Pertamina</p>
+              <p class="text-xs text-gray-500">Berlaku di semua SPBU Pertamina</p>
+            </div>
+            <p class="text-amber-400 font-bold text-lg">Rp50.000</p>
+          </div>
+          <button onclick="buyAffiliate('Voucher Bensin Pertamina', 50000)" class="w-full py-2.5 rounded-xl text-sm font-bold text-white" style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.18)">Beli Sekarang →</button>
+        </div>
+
+        <div class="glass-card p-5" style="border-color:rgba(16,185,129,0.15)">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style="background:rgba(16,185,129,0.1)">🛡️</div>
+            <div class="flex-1">
+              <p class="text-white font-bold">Asuransi Kecelakaan Harian</p>
+              <p class="text-xs text-gray-500">Proteksi selama kamu kerja hari ini</p>
+            </div>
+            <p class="text-emerald-400 font-bold text-lg">Rp2.000</p>
+          </div>
+          <button onclick="buyAffiliate('Asuransi Harian Driver', 2000)" class="w-full py-2.5 rounded-xl text-sm font-bold text-white" style="background:rgba(16,185,129,0.07); border:1px solid rgba(16,185,129,0.15)">Beli Sekarang →</button>
+        </div>
+
+        <!-- Cari Bengkel -->
+        <div class="glass-card p-5" style="border-color:rgba(16,185,129,0.2); background:linear-gradient(135deg,rgba(16,185,129,0.06),rgba(5,150,105,0.03))">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style="background:rgba(16,185,129,0.12)">📍</div>
+            <div class="flex-1">
+              <p class="text-white font-bold">Bengkel Mitra RiderCuan</p>
+              <p class="text-xs text-gray-500">4 bengkel tersedia di Bandung · Diskon eksklusif</p>
+            </div>
+          </div>
+          <button onclick="showModal('bengkelModal')"
+                  class="w-full py-2.5 rounded-xl text-sm font-bold"
+                  style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:#10b981;">
+            📍 Cari Bengkel Terdekat →
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════ TAB: PRO & REFERRAL ════════════════════════════════ -->
+    <div class="tab-content" id="tab-pro">
+      <h2 class="text-white text-2xl font-800 mb-6">⭐ RiderCuan PRO</h2>
+
+      <div style="max-width:700px; display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start">
+
+        <!-- PRO Card -->
+        <div class="p-6 rounded-2xl" style="background:linear-gradient(135deg,#1f1400,#120d00); border:1px solid rgba(245,158,11,0.25)">
+          <div class="flex justify-between items-start mb-5">
+            <div>
+              <p class="text-amber-400 font-bold text-lg">Upgrade ke PRO</p>
+              <p class="text-gray-400 text-sm mt-1">Akses semua fitur premium</p>
+            </div>
+            <div class="text-right">
+              <p class="text-4xl font-800 grad-text">Rp9k</p>
+              <p class="text-xs text-gray-500">/bulan</p>
+            </div>
+          </div>
+          <div class="space-y-2 mb-5">
+            <div class="flex items-center gap-2 text-sm text-gray-300"><span class="text-amber-400 font-bold">✓</span> Export Laporan ke CSV</div>
+            <div class="flex items-center gap-2 text-sm text-gray-300"><span class="text-amber-400 font-bold">✓</span> Analisis tren pendapatan mingguan</div>
+            <div class="flex items-center gap-2 text-sm text-gray-300"><span class="text-amber-400 font-bold">✓</span> Target pendapatan harian custom</div>
+            <div class="flex items-center gap-2 text-sm text-gray-300"><span class="text-amber-400 font-bold">✓</span> Notifikasi pintar & reminder</div>
+          </div>
+          <button id="btn-upgrade-pro" onclick="upgradePro()" class="btn-primary text-sm">Upgrade Sekarang →</button>
+          <p id="pro-active-badge" class="hidden text-center mt-3 text-emerald-400 text-sm font-bold">✅ Akun kamu sudah PRO!</p>
+        </div>
+
+        <!-- Referral -->
+        <div>
+          <p class="text-white font-bold text-base mb-4">🤝 Ajak Kawan, Get Cuan!</p>
+
+          <div class="glass-card p-4 mb-3">
+            <p class="text-xs text-gray-500 mb-2">Kode Referral Kamu</p>
+            <div class="flex gap-2">
+              <div class="flex-1 py-3 px-4 rounded-xl text-center font-bold text-amber-400 text-lg tracking-widest" style="background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.18)" id="ref-code-display">—</div>
+              <button onclick="copyRefCode()" class="px-4 rounded-xl text-xs font-bold text-white" style="background:rgba(255,255,255,0.07)">Salin</button>
+            </div>
+          </div>
+
+          <div class="glass-card p-4 mb-3">
+            <p class="text-xs text-gray-500 mb-2">Masukkan Kode Teman</p>
+            <div class="flex gap-2">
+              <input id="referral-input" type="text" class="rc-input flex-1 text-sm uppercase">
+              <button onclick="submitReferral()" class="px-4 rounded-xl text-xs font-bold text-black whitespace-nowrap" style="background:linear-gradient(135deg,#f59e0b,#f97316)">Daftar</button>
+            </div>
+          </div>
+
+          <div class="glass-card p-4">
+            <div class="flex justify-between items-center mb-3">
+              <p class="text-sm text-white font-bold">Progress</p>
+              <p class="text-xs text-amber-400 font-semibold" id="ref-count-label">0/5 teman</p>
+            </div>
+            <div class="flex gap-1.5" id="ref-progress-dots">
+              <div class="h-2 flex-1 rounded-full" style="background:rgba(255,255,255,0.08)"></div>
+              <div class="h-2 flex-1 rounded-full" style="background:rgba(255,255,255,0.08)"></div>
+              <div class="h-2 flex-1 rounded-full" style="background:rgba(255,255,255,0.08)"></div>
+              <div class="h-2 flex-1 rounded-full" style="background:rgba(255,255,255,0.08)"></div>
+              <div class="h-2 flex-1 rounded-full" style="background:rgba(255,255,255,0.08)"></div>
+            </div>
+            <p class="text-xs text-gray-600 mt-2">5 teman → e-Voucher Pertamina Rp10.000!</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div><!-- /app-shell -->
+
+<script>
+// ─────────────────────────────────────────────
+// CONFIG — URL RELATIF (tidak ada http://localhost)
+// ─────────────────────────────────────────────
+const API = '/api';
+let USER_ID = null;
+let state   = {};
+let activeQuickType = null;
+
+// ─────────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────────
+const rp = v => 'Rp' + Math.round(v).toLocaleString('id-ID');
+
+function showToast(msg, emoji = '✅') {
+  const t = document.getElementById('toast');
+  t.textContent = emoji + ' ' + msg;
+  t.style.display = 'block'; t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)';
+  setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(-8px)';
+    setTimeout(() => { t.style.display = 'none'; }, 300);
+  }, 2500);
+}
+
+function showModal(id)  { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+
+  // Sidebar desktop
+  document.querySelectorAll('.sidebar-nav-item').forEach(n => n.classList.remove('active'));
+  const navMap = { 'tab-home':'nav-home', 'tab-report':'nav-report', 'tab-market':'nav-market', 'tab-pro':'nav-pro' };
+  const navEl = document.getElementById(navMap[tabId]);
+  if (navEl) navEl.classList.add('active');
+
+  // Bottom nav mobile
+  document.querySelectorAll('.bnav-item').forEach(n => n.classList.remove('active'));
+  const bnavMap = { 'tab-home':'bnav-home', 'tab-report':'bnav-report', 'tab-market':'bnav-market', 'tab-pro':'bnav-pro' };
+  const bnavEl = document.getElementById(bnavMap[tabId]);
+  if (bnavEl) bnavEl.classList.add('active');
+
+  // Scroll ke atas saat ganti tab di mobile
+  const mainContent = document.getElementById('main-content');
+  if (mainContent) mainContent.scrollTop = 0;
+}
+
+// ─────────────────────────────────────────────
+// LOAD DATA
+// ─────────────────────────────────────────────
+async function loadData() {
+  try {
+    const res  = await fetch(`${API}/user/${USER_ID}`);
+    const data = await res.json();
+    state = data;
+    renderDashboard(data);
+  } catch(e) {
+    showToast('Gagal koneksi ke server', '❌');
+  }
+}
+
+function renderDashboard(data) {
+  const { user, dashboard, transactions, referralCount } = data;
+
+  // Topbar & header
+  document.getElementById('hdr-name').textContent      = user.name;
+  document.getElementById('hdr-name-main').textContent = user.name;
+
+  // Sidebar motor info
+  document.getElementById('sidebar-motor').textContent = user.motor_brand || '—';
+  document.getElementById('sidebar-odo').textContent   = user.current_odometer.toLocaleString('id-ID');
+
+  // Tanggal
+  document.getElementById('tanggal-hari-ini').textContent = new Date().toLocaleDateString('id-ID', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  // PRO badge
+  if (user.is_pro) {
+    document.getElementById('hdr-pro').classList.remove('hidden');
+    document.getElementById('pro-active-badge').classList.remove('hidden');
+    document.getElementById('btn-upgrade-pro').classList.add('hidden');
+    renderExport(true);
+  } else {
+    renderExport(false);
+  }
+
+  // Hero
+  document.getElementById('uang-bersih').textContent    = rp(dashboard.uangBersihDapur);
+  document.getElementById('total-argo-mini').textContent= rp(dashboard.totalArgo);
+  document.getElementById('total-ops-mini').textContent = rp(dashboard.totalOperasional);
+  document.getElementById('ops-besok').textContent      = rp(dashboard.operasionalBesok);
+
+  // Celengan sidebar
+  document.getElementById('celengan-total').textContent = rp(user.celengan_balance);
+  document.getElementById('current-odo').textContent    = user.current_odometer.toLocaleString('id-ID');
+
+  // Ringkasan beranda
+  const maxVal = Math.max(dashboard.totalArgo, dashboard.totalOperasional, 1);
+  const pct = (v) => Math.min((v / maxVal) * 100, 100).toFixed(1) + '%';
+  document.getElementById('rep-argo').textContent       = rp(dashboard.totalArgo);
+  document.getElementById('rep-ops').textContent        = rp(dashboard.totalOperasional);
+  document.getElementById('rep-celengan').textContent   = rp(user.celengan_balance);
+  document.getElementById('rep-besok').textContent      = rp(dashboard.operasionalBesok);
+  document.getElementById('rep-bensin').textContent     = rp(dashboard.totalBensin);
+  document.getElementById('rep-parkir').textContent     = rp(dashboard.totalParkir);
+  document.getElementById('rep-makan').textContent      = rp(dashboard.totalMakan);
+  document.getElementById('rep-argo-bar').style.width   = pct(dashboard.totalArgo);
+  document.getElementById('rep-ops-bar').style.width    = pct(dashboard.totalOperasional);
+  document.getElementById('rep-besok-bar').style.width  = pct(dashboard.operasionalBesok);
+
+  // Tab laporan
+  document.getElementById('rep-bersih').textContent     = rp(dashboard.uangBersihDapur);
+  document.getElementById('lap-argo').textContent       = rp(dashboard.totalArgo);
+  document.getElementById('lap-ops').textContent        = rp(dashboard.totalOperasional);
+  document.getElementById('lap-celengan').textContent   = rp(user.celengan_balance);
+  document.getElementById('lap-besok').textContent      = rp(dashboard.operasionalBesok);
+  document.getElementById('lap-argo-bar').style.width   = pct(dashboard.totalArgo);
+  document.getElementById('lap-ops-bar').style.width    = pct(dashboard.totalOperasional);
+  document.getElementById('lap-besok-bar').style.width  = pct(dashboard.operasionalBesok);
+
+  // Referral
+  document.getElementById('ref-code-display').textContent = user.ref_code;
+  document.getElementById('ref-count-label').textContent  = `${referralCount}/5 teman`;
+  updateRefDots(referralCount);
+
+  // Tx list
+  renderTxList(transactions);
+
+  // Ad trigger
+  if (user.celengan_balance >= 65000) {
+    setTimeout(() => showModal('modalAd'), 600);
+  }
+}
+
+function renderTxList(txs) {
+  const el = document.getElementById('tx-list');
+  if (!txs.length) {
+    el.innerHTML = '<p class="text-gray-600 text-sm text-center py-6">Belum ada transaksi hari ini</p>';
+    return;
+  }
+  const icons  = {
+    argo:'💸', bensin:'⛽', parkir:'🅿️', makan:'🍚',
+    affiliate_buy:'🛒', celengan:'🔧', pakai_celengan:'🛠️'
+  };
+  const colors = {
+    argo:'rgba(16,185,129,0.15)', bensin:'rgba(239,68,68,0.15)',
+    parkir:'rgba(139,92,246,0.15)', makan:'rgba(245,158,11,0.15)',
+    affiliate_buy:'rgba(96,165,250,0.15)', celengan:'rgba(245,158,11,0.15)',
+    pakai_celengan:'rgba(249,115,22,0.15)'
+  };
+  const labels = {
+    argo:'Argo', bensin:'Bensin', parkir:'Parkir', makan:'Makan',
+    affiliate_buy:'Beli', celengan:'Celengan Servis', pakai_celengan:'Pakai Servis'
+  };
+  const isIncome = t => t === 'argo';
+
+  el.innerHTML = txs.map(tx => `
+    <div class="tx-item" id="tx-row-${tx.id}">
+      <div class="tx-icon" style="background:${colors[tx.type]||'rgba(255,255,255,0.08)'}">
+        ${icons[tx.type]||'💰'}
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-white text-sm font-semibold">${labels[tx.type]||tx.type}</p>
+        <p class="text-gray-500 text-xs truncate">${tx.note || tx.timestamp.slice(11,16)}</p>
+      </div>
+      <p class="text-sm font-bold ${isIncome(tx.type)?'text-emerald-400':'text-red-400'} mr-2">
+        ${isIncome(tx.type)?'+':'−'}${rp(tx.amount)}
+      </p>
+      <button
+        onclick="deleteTransaction(${tx.id})"
+        title="Hapus"
+        style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.18); border-radius:7px; padding:4px 7px; cursor:pointer; flex-shrink:0; font-size:13px;"
+        onmouseover="this.style.background='rgba(239,68,68,0.2)'"
+        onmouseout="this.style.background='rgba(239,68,68,0.08)'"
+      >🗑️</button>
+    </div>
+  `).join('');
+}
+
+function renderExport(isPro) {
+  document.getElementById('btn-export').style.display = isPro ? 'inline-flex' : 'none';
+  const lock = document.getElementById('export-lock');
+  isPro ? lock.classList.add('hidden') : lock.classList.remove('hidden');
+}
+
+function updateRefDots(count) {
+  document.querySelectorAll('#ref-progress-dots div').forEach((d, i) => {
+    d.style.background = i < count ? 'linear-gradient(135deg,#f59e0b,#f97316)' : 'rgba(255,255,255,0.08)';
+  });
+}
+
+// ─────────────────────────────────────────────
+// HAPUS TRANSAKSI
+// ─────────────────────────────────────────────
+async function deleteTransaction(txId) {
+  if (!confirm('Hapus transaksi ini? Saldo dapur akan ikut diperbarui.')) return;
+  try {
+    const res  = await fetch(`${API}/transaction/${txId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      const row = document.getElementById(`tx-row-${txId}`);
+      if (row) { row.style.opacity = '0'; row.style.transition = 'opacity 0.2s'; }
+      setTimeout(async () => { showToast('Transaksi dihapus', '🗑️'); await loadData(); }, 200);
+    } else {
+      showToast(data.error || 'Gagal menghapus', '❌');
+    }
+  } catch(e) { showToast('Gagal menghapus transaksi', '❌'); }
+}
+
+// ─────────────────────────────────────────────
+// QUICK INPUT
+// ─────────────────────────────────────────────
+function openArgoInput()   { _openInput('argo',   '💸 Nominal Argo (Rp)'); }
+function openBensinInput() { _openInput('bensin', '⛽ Nominal Bensin (Rp)'); }
+function openMakanInput()  { _openInput('makan',  '🍚 Nominal Makan (Rp)'); }
+
+function _openInput(type, label) {
+  activeQuickType = type;
+  document.getElementById('quick-input-label').textContent = label;
+  document.getElementById('quick-input-box').classList.remove('hidden');
+  document.getElementById('quick-amount').value = '';
+  document.getElementById('quick-amount').focus();
+}
+
+function cancelQuickInput() {
+  document.getElementById('quick-input-box').classList.add('hidden');
+  document.getElementById('quick-amount').value = '';
+  activeQuickType = null;
+}
+
+async function submitQuickInput() {
+  const amount = parseFloat(document.getElementById('quick-amount').value);
+  if (!amount || amount <= 0) { showToast('Masukkan nominal yang valid', '⚠️'); return; }
+  await postTransaction(activeQuickType, amount);
+  cancelQuickInput();
+}
+
+async function quickParkir(amount) {
+  closeModal('modalParkir');
+  await postTransaction('parkir', amount, `Parkir ${rp(amount)}`);
+}
+
+async function postTransaction(type, amount, note = '') {
+  try {
+    const res  = await fetch(`${API}/transaction`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: USER_ID, type, amount, note }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      const labels = { argo:'Argo', bensin:'Bensin', parkir:'Parkir', makan:'Makan', affiliate_buy:'Pembelian' };
+      showToast(`${labels[type]||type} ${rp(amount)} tercatat!`);
+      await loadData();
+    }
+  } catch(e) { showToast('Gagal menyimpan', '❌'); }
+}
+
+// ─────────────────────────────────────────────
+// PAKAI SALDO SERVIS
+// ─────────────────────────────────────────────
+function openPakaiServisModal() {
+  // Tampilkan saldo terkini di modal
+  const saldo = state && state.user ? state.user.celengan_balance : 0;
+  document.getElementById('modal-saldo-display').textContent = rp(saldo);
+  document.getElementById('pakai-servis-amount').value = '';
+  document.getElementById('pakai-servis-error').textContent = '';
+  document.getElementById('pakai-servis-error').classList.remove('show');
+  showModal('modalPakaiServis');
+}
+
+async function submitPakaiServis() {
+  const amount = parseFloat(document.getElementById('pakai-servis-amount').value);
+  const errEl  = document.getElementById('pakai-servis-error');
+
+  if (!amount || amount <= 0) {
+    errEl.textContent = 'Masukkan nominal biaya servis yang valid.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  try {
+    const res  = await fetch('/api/pakai-servis', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: USER_ID, amount }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      closeModal('modalPakaiServis');
+      showToast(data.message || `${rp(amount)} dipakai untuk servis`, '🛠️');
+      await loadData(); // refresh semua angka dashboard
+    } else {
+      errEl.textContent = data.error || 'Gagal menggunakan saldo.';
+      errEl.classList.add('show');
+    }
+  } catch(e) {
+    errEl.textContent = 'Tidak bisa terhubung ke server.';
+    errEl.classList.add('show');
+  }
+}
+
+// ─────────────────────────────────────────────
+// CELENGAN SERVIS
+// ─────────────────────────────────────────────
+async function hitungCelengan() {
+  const newOdo = parseFloat(document.getElementById('new-odometer').value);
+  if (!newOdo || newOdo <= 0) { showToast('Masukkan nilai odometer', '⚠️'); return; }
+  try {
+    const res  = await fetch(`${API}/celengan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: USER_ID, new_odometer: newOdo }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`${data.selisihKM} km → ${rp(data.potongan)} masuk celengan`);
+      document.getElementById('new-odometer').value = '';
+      await loadData();
+    } else {
+      showToast(data.error, '⚠️');
+    }
+  } catch(e) { showToast('Gagal menghitung', '❌'); }
+}
+
+// ─────────────────────────────────────────────
+// MARKETPLACE
+// ─────────────────────────────────────────────
+async function buyAffiliate(name, amount) {
+  await postTransaction('affiliate_buy', amount, name);
+}
+
+// ─────────────────────────────────────────────
+// UPGRADE PRO
+// ─────────────────────────────────────────────
+async function upgradePro() {
+  try {
+    const res  = await fetch(`${API}/upgrade-pro`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: USER_ID }),
+    });
+    const data = await res.json();
+    if (data.success) { showToast('Selamat! Akun PRO aktif! 🎉'); await loadData(); }
+  } catch(e) { showToast('Gagal upgrade', '❌'); }
+}
+
+// ─────────────────────────────────────────────
+// EXPORT CSV
+// ─────────────────────────────────────────────
+function exportCSV() {
+  const a = document.createElement('a');
+  a.href     = `${API}/export/${USER_ID}`;
+  a.download = `ridercuan_${USER_ID}.csv`;
+  a.click();
+  showToast('Mengunduh laporan CSV...', '📥');
+}
+
+// ─────────────────────────────────────────────
+// REFERRAL
+// ─────────────────────────────────────────────
+function copyRefCode() {
+  const code = document.getElementById('ref-code-display').textContent;
+  navigator.clipboard.writeText(code).then(() => showToast('Kode disalin!', '📋'));
+}
+
+async function submitReferral() {
+  const code = document.getElementById('referral-input').value.trim().toUpperCase();
+  if (!code) { showToast('Masukkan kode teman', '⚠️'); return; }
+  try {
+    const res  = await fetch(`${API}/referral`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: USER_ID, invited_code: code }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.reward, '🤝');
+      document.getElementById('referral-input').value = '';
+      await loadData();
+    } else {
+      showToast(data.error, '⚠️');
+    }
+  } catch(e) { showToast('Gagal mendaftar referral', '❌'); }
+}
+
+// ─────────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────────
+function showScreen(id) {
+  ['screenLogin','screenDaftar'].forEach(s => document.getElementById(s).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  document.getElementById('login-error').classList.remove('show');
+  document.getElementById('daftar-error').classList.remove('show');
+}
+
+function showAuthError(elId, msg) {
+  const el = document.getElementById(elId);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function showDashboard() {
+  document.getElementById('screenLogin').classList.add('hidden');
+  document.getElementById('screenDaftar').classList.add('hidden');
+  document.getElementById('app-shell').classList.remove('hidden');
+  loadData();
+}
+
+function handleLogout() {
+  if (!confirm('Yakin ingin keluar dari akun ini?')) return;
+  localStorage.removeItem('ridercuan_user_id');
+  USER_ID = null;
+  window.location.reload();
+}
+
+async function handleLogin() {
+  const nameVal = document.getElementById('login-name').value.trim();
+  const passVal = document.getElementById('login-password').value;
+
+  if (!nameVal) { alert('Nama panggilan tidak boleh kosong.'); return; }
+  if (!passVal)  { alert('Password tidak boleh kosong.'); return; }
+
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true; btn.textContent = 'Memeriksa...';
+
+  try {
+    const res  = await fetch(`${API}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: nameVal, password: passVal }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      localStorage.setItem('ridercuan_user_id', data.user.id);
+      USER_ID = data.user.id;
+      showToast(`Selamat datang, ${data.user.name}! 👋`);
+      showDashboard();
+    } else {
+      alert(data.error || 'Login gagal. Periksa nama dan password kamu.');
+      showAuthError('login-error', data.error || 'Login gagal.');
+    }
+  } catch (e) {
+    alert('Tidak bisa terhubung ke server. Pastikan server Node.js sudah berjalan.');
+    showAuthError('login-error', 'Tidak bisa terhubung ke server.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Masuk →';
+  }
+}
+
+async function handleDaftar() {
+  const name    = document.getElementById('daftar-name').value.trim();
+  const pass    = document.getElementById('daftar-password').value;
+  const confirm = document.getElementById('daftar-password-confirm').value;
+  const motor   = document.getElementById('daftar-motor').value.trim();
+  const tahun   = parseInt(document.getElementById('daftar-tahun').value) || 2020;
+  const odo     = parseFloat(document.getElementById('daftar-odo').value) || 0;
+
+  if (!name)            { alert('Nama panggilan tidak boleh kosong.'); return; }
+  if (!pass)            { alert('Password tidak boleh kosong.'); return; }
+  if (pass !== confirm) { alert('Konfirmasi password tidak cocok.'); return; }
+
+  const btn = document.getElementById('btn-daftar');
+  btn.disabled = true; btn.textContent = 'Mendaftarkan...';
+
+  try {
+    const res  = await fetch(`${API}/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, password: pass, motor_brand: motor || 'Yamaha Mio M3', motor_year: tahun, current_odometer: odo }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      localStorage.setItem('ridercuan_user_id', data.user.id);
+      USER_ID = data.user.id;
+      showToast(`Akun berhasil dibuat, ${data.user.name}! 🎉`);
+      showDashboard();
+    } else {
+      alert(data.error || 'Gagal mendaftar. Coba lagi.');
+      showAuthError('daftar-error', data.error || 'Gagal mendaftar.');
+    }
+  } catch (e) {
+    alert('Tidak bisa terhubung ke server. Pastikan server Node.js sudah berjalan.');
+    showAuthError('daftar-error', 'Tidak bisa terhubung ke server.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Daftar Sekarang →';
+  }
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+window.onload = function () {
+  const savedId = localStorage.getItem('ridercuan_user_id');
+  if (savedId) {
+    USER_ID = parseInt(savedId);
+    fetch(`${API}/user/${USER_ID}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.user) { showDashboard(); }
+        else { localStorage.removeItem('ridercuan_user_id'); showScreen('screenLogin'); }
+      })
+      .catch(() => showScreen('screenLogin'));
+  } else {
+    showScreen('screenLogin');
+  }
+};
+</script>
+
+<!-- ─── PWA: Service Worker Registration ─── -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('[PWA] Service Worker registered:', reg.scope))
+      .catch(err => console.warn('[PWA] SW registration failed:', err));
+  });
+}
+</script>
+</body>
+</html>
